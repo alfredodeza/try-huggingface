@@ -1,0 +1,4 @@
+ipywidgets==8.0.1
+ipykernel==6.15.1
+transformers==4.21.1
+datasets==2.4.0
