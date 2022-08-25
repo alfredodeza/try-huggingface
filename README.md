@@ -1,4 +1,4 @@
-# Try 🤗 HugginFace!
+# Try 🤗 HuggingFace!
 
 Examples to try HuggingFace datasets and transformers
 
