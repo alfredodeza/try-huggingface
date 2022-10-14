@@ -1,0 +1,66 @@
+How we build MLflow projects and rapidly iterate over them
+
+Introduction
+Starting a new machine learning (ML) project is always cumbersome, especially when collaborating with many people: different standards need to be followed, some files need to exist by default, artifacts need to be stored at a certain location, and so on.
+
+As the number of projects keeps increasing, they end up looking very similar in structure and standards (writing tests, maintaining documentation, etc.), and while these projects are similar, sometimes they do not always work as intended.
+
+As mentioned in a previous article, we use Databricks as our data platform and MLflow at the core of all our projects that involve machine learning. For those of you who are new to MLflow, it is basically a tool/platform that manages the ML life-cycle — creating experiments, registering and deploying models. While the MLflow CLI is very handy, creating new projects that follow the structure of an MLflow project needs to be done manually.
+
+To tackle the issues mentioned above, we used cookiecutter to create a template for MLflow projects. By doing this, the data team can focus less on structure and configuration of the project and more on the implementation of the model.
+
+The following article shows how we designed our cookiecutter template and how we use it to run our projects on Databricks.
+
+Project templating using cookiecutter
+The cookiecutter template helps streamline creating, testing, running and deploying MLflow projects. We designed the template in such a way that:
+
+the structure of our project with that defined by MLflow is consistent
+an internal standard can be enforced within the team
+a default set of requirements for local setup and development is maintained
+it facilitates continuous integration/continuous delivery (CI/CD)
+When the cookiecutter template is used, required information such as the specifics of the project along with the location of where it will be stored (the artifact path) and the MLflow experiment name are configured. Once this information is recorded, the cookiecutter creates a new git-initialized folder with the structure defined in the template and the details entered earlier. Once the steps in the cookiecutter template have been completed, all we need to do is to add the GitHub remote and we are good to go !
+
+Since the cookiecutter structures the project and its files, the next and exciting step is to start building the model by adding logic to it. Once the model is ready, we make sure that the tests do not fail, and that the MLflow project runs locally without any errors. As an added step, the project can be deployed and served locally to test if responses are received when requests are sent to it.
+
+Apart from the local development and testing, workflows that assist continuous integration have been set up using GitHub Actions. The cookiecutter template includes two workflows:
+
+the push workflow that performs tests and runs the project
+the release workflow that runs the project on a cluster in Databricks once all the tests have passed
+MLflow on Databricks
+With every new release, a new run of the project is logged on Databricks. Every logged run contains information such as the run name, the time it was started, who started it, the GitHub commit hash and a description if given. An example of how runs are logged is shown in Fig 1:
+
+
+Figure 1: Logging of MLflow runs on Databricks (Sensitive information hidden)
+From the list of all runs, we can then choose the latest successful run and register the model associated with this run, if the output of the run is what was expected.
+
+
+Figure 2: Model registration (Sensitive information hidden)
+MLflow facilitates model registration with the help of a button and also automatically versions every model that is registered.
+
+
+Figure 3: Model versioning (Sensitive information hidden)
+Registered models can subsequently be assigned a stage. A stage can either be Production, Staging, Archived or None. By default, when a model is served, it does not have a stage. We always serve newly registered models to Staging so that teams such as the Frontend/Backend can communicate with it and integrate the new logic from the MLflow model into their respective staging environments.
+
+
+Figure 4: Model stage transitioning
+Once a model is registered, we can serve the model to a REST API endpoint. Managing models just by using MLflow is pretty easy, but managing MLflow models on Databricks is a lot easier! For example, model serving on Databricks is so easy that there is no need to configure the computing resources where the model will be served on, or the URL of the endpoint. Databricks does all of this automatically when the model serving option is enabled! If the model lives in either the Production or Staging stage, the invocation URL contains /Production or /Staging depending on the stage respectively.
+
+
+Figure 5: Model serving (Sensitive information hidden)
+POST requests can now be sent to the served model using the “Model URL”. Databricks provides a friendly UI to test the served model on their platform (as shown in Fig 5).
+
+Once all systems are go, with a click of a button, we can easily transition the stage to Production and watch our newly created model work its magic!
+
+Entire process in a nutshell:
+While the process of initializing an MLflow project and putting it to production does require some manual effort (to ensure that the right models are registered, and served), all other checks and balances are taken care of by the CI/CD workflows that are part of our Cookiecutter template by default. This makes it extremely easy to continuously add new logic into our models (or create new ones) and put these changes to production.
+
+The entire process from initialization to putting the model to production is summarized in Fig 6.
+
+
+Figure 6: Summary of process
+Final thoughts:
+Templating using cookiecutter has helped the team focus less on the structure of the project and more on the core implementation of the project. Adding to this, by using MLflow, managing and tracking the models that we build has never been easier. And finally, the seamless integration of MLflow into the Databricks platform has made the setup a lot simpler, and deployment a whole lot faster !
+
+In short, the process we follow allows us to focus solely on adding and improving the implementation/logic of the model, which can then be integrated into our core product, the app.
+
+
