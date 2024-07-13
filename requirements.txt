@@ -3,3 +3,4 @@ ipykernel==6.15.1
 transformers==4.21.1
 datasets==2.4.0
 ipykernel==6.15.1
+tensorflow==2.10
